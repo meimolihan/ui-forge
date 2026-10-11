@@ -58,7 +58,7 @@ node <skill>/scripts/shoot.mjs <页面地址或 HTML 文件> [选项]
 - `select 选择器 值`：操作原生下拉框，按 value 或可见文字选，并触发 input 和 change。
 - `waitfor 选择器`：最多等 5 秒，等元素出现并可见。
 - `key 按键`：认 `Meta+A`、`Control+A`、`Shift+Tab`、`ControlOrMeta+A`；最后一种在 macOS 用 Meta，其他平台用 Control。
-- `scroll 纵向位移`；`wait 450`、`wait450`、`wait 450ms`、`wait 0.5s` 都认。
+- `scroll 纵向位移`；`wait 450`、`wait450`、`wait 450ms`、`wait 0.5s` 都认。**`scroll` 只接受纵向相对位移**（`scroll 900` 往下滚 900），不接受 `scroll 0 900` 这种绝对写法；**也没有 `eval` 动作**，写 `eval window.scrollTo(...)` 会被拒。要跳到页面某个绝对位置，用足够大的相对位移近似。
 
 别名：`doubleclick` 是 `dblclick`，`press` 是 `key`，`sleep` 是 `wait`。
 
