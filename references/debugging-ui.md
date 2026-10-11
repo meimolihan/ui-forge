@@ -16,7 +16,10 @@
 - [案例二：文字重叠成一团——pin 钉错了对象](#案例二文字重叠成一团pin-钉错了对象)
 - [案例三：点击无反应——脚本从来没执行过](#案例三点击无反应脚本从来没执行过)
 - [案例四：截图里的对比度「不达标」是动画中途取样](#案例四截图里的对比度不达标是动画中途取样)
-- [案例五：截图工具连不上，看不到页面](#案例五截图工具连不上看不到页面)
+- [案例五：截图工具连不上看不到页面](#案例五截图工具连不上看不到页面)
+- [案例六：浮层被裁掉，z-index 加到最大也没用](#案例六浮层被裁掉z-index-加到最大也没用)
+- [案例七：内容「一直在」，但用 JS 才显示](#案例七内容一直在但用-js-才显示)
+- [案例八：主题切换闪一下白屏（FOUC）](#案例八主题切换闪一下白屏fouc)
 - [误报怎么处置](#误报怎么处置)
 
 ---
@@ -215,7 +218,7 @@ node scripts/shoot.mjs <页面> --wait 2400 --out <证据目录>
 
 ---
 
-## 案例五：截图工具连不上，看到页面
+## 案例五：截图工具连不上看不到页面
 
 **现象**：把文件当 URL 传给截图工具，页面打不开或工具直接失败。
 
@@ -234,6 +237,121 @@ node scripts/shoot.mjs <目录>/_preview.html --out <证据目录>
 **另一个环境坑**：Windows 上用 curl 抓外部资源报
 `CRYPT_E_REVOCATION_OFFLINE`（证书吊销检查拿不到网络）。加
 `--ssl-no-revoke` 能解决。下载字体、样式这类外部资源时都可能撞上。
+
+---
+
+## 案例六：浮层被裁掉，`z-index` 加到最大也没用
+
+**现象**：提示条、tooltip、下拉、气泡这类要「浮在容器外面」的元素，
+明明写了 `z-index: 999`，在容器里却**只剩一条被切掉的边**，
+或者干脆整个看不见。父级加了再高的 `z-index` 也无济于事。
+
+**根因**：祖先上的 `overflow: hidden` 会**物理裁切**所有后代，
+**与层叠顺序无关**。`z-index` 只在层叠上下文内部排序，
+它管不了「祖先已经把你裁掉了」这件事。这是最容易误判的一类——
+因为改 `z-index` 时数字确实在变大，看起来像在起作用。
+
+**先分清是哪种"看不见"**：
+
+| 症状 | 根因 | 改法 |
+| --- | --- | --- |
+| 只剩一条边、像被切过 | 祖先 `overflow: hidden` 裁切 | 去掉祖先 `overflow`，圆角改由子元素 `border-radius` 收口 |
+| 完全不出现，但 DOM里有 | 祖先建立了层叠上下文，压不过 | 查祖先的 `transform` / `opacity<1` / `filter` / `will-change`，把 `z-index` 提到该上下文里 |
+| 位置整体偏移 | 参照物选错 | 锚点改成 `position: relative` 的具体元素 |
+
+**修法（裁切）**：去掉容器上的 `overflow: hidden`，
+把原本靠它实现的圆角收到内部元素上。
+
+```css
+/* 有问题：浮层超出即被裁 */
+.card { overflow: hidden; border-radius: 12px; }
+.card::before { /* 渐变条 */ }
+
+/* 改：容器不裁，圆角由需要收口的子元素自己带 */
+.card { border-radius: 12px; }
+.card::before { border-radius: 12px 12px 0 0; }
+```
+
+需要横向滚动时同理：`overflow-x: auto` 只放在真正要滚的
+`pre` 上，别放在包裹它的容器上。
+
+**验证**：修完用 `--mark "1=.card"`截图，肉眼确认浮层完整；
+这一类**看代码判断不了**，必须出图。
+
+---
+
+## 案例七：内容「一直在」，但用 JS 才显示
+
+**现象**：页面在浏览器里正常，禁用 JavaScript 或抓取/截图环境不执行脚本时，
+首屏几乎全空或只剩标题。滚动出场动画的元素初始 `opacity: 0`，
+脚本没跑就永远不显现。
+
+**根因**：把「可见性」本身挂在了脚本上。出场动画的正确做法是
+**默认可见、脚本加载后再切回隐藏**（渐进增强），而不是反过来。
+
+**修法**：反转初始状态，JS 负责「加上动画」，不负责「让内容出现」。
+
+```css
+/* 有问题：内容默认隐藏，依赖 JS 才出现 */
+.reveal { opacity: 0; transform: translateY(16px); }
+
+/* 改：默认可见 */
+.reveal { opacity: 1; transform: none; }
+.js .reveal {           /* 只有确认 JS 可用时才隐藏 */
+  opacity: 0;
+  transform: translateY(16px);
+}
+.js .reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+```
+
+`<html>` 上默认写 `class="no-js"`，脚本第一行改成 `js`，
+再由脚本决定是否接管。配套一条兜底：
+
+```css
+.no-js .reveal { opacity: 1 !important; transform: none !important; }
+```
+
+**还有一类**：动画元素藏在初始 `display:none` 的面板里（tab、弹层），
+IntersectionObserver 不会触发，切换过去时仍然是空的。
+切面板时补一次reveal，或干脆别给面板内元素加入场动画。
+
+**验证**：`shoot.mjs` 抓的是执行了 JS 的页面，**测不出这个缺陷**。
+要手动关掉 JS 看一眼，或用阅读模式/纯文本抓取验证。
+
+---
+
+## 案例八：主题切换闪一下白屏（FOUC）
+
+**现象**：深色模式页面首帧是白的，闪一下才变深色。
+
+**根因**：`data-theme` 写在 CSS 里或由 `<body>` 上的脚本设置，
+但 CSS 已经渲染过了才读到 localStorage，首帧用了默认浅色。
+
+**修法**：在 `<head>` 里放一段**同步内联脚本**，在样式表之前
+读完 localStorage 并写进 `<html>` 的属性上。
+
+```html
+<script>
+  // 同步执行，必须在渲染前，且不依赖外部文件
+  (function () {
+    var t = localStorage.getItem('theme');
+    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+```
+
+**别用 `<script src>` 或 `type="module"`**：两者都是异步的，
+会晚于首次渲染执行，等于没写。
+
+双主题的其余坑（浅色不能由深色反推、token 要两套各自验过）
+见 [明暗双主题](theme-switching.md)。
+
+**验证**：截图取的是首帧之外的时刻，容易漏。
+用 `--steps "open: ..."` 录首次出场，或把 `--wait` 设到 0 抓最早一帧看。
 
 ---
 

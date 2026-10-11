@@ -179,7 +179,11 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 凭 CSS 语义猜出来的原因，看着像那么回事，修完往往不对。排错先挂探针，
 读 `getComputedStyle` 和 `getBoundingClientRect`，把「哪里不对」变成一个数，
 改完复测同一个数。**同一处两次跑出两个对比度，先怀疑取样时机，别改色值。**
-五个已实测过的坑和探针写法读 [界面排错](references/debugging-ui.md)。
+八个已实测过的坑和探针写法读 [界面排错](references/debugging-ui.md)。
+
+其中两条**看代码判断不了、必须出图或换环境验**：浮层被祖先
+`overflow: hidden` 裁掉时 `z-index` 改到多大都没用；内容默认隐藏、
+靠 JS 才显现的缺陷，在执行了 JS 的截图里**根本看不出来**。
 
 ---
 
@@ -206,6 +210,10 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 精修和基线做前后对比；新页面、改版和局部重构做下面全部检查。
 
 - 交互从真实入口走到可观察结果；保存后重新读取。
+- **浮层要出图看**：tooltip、下拉、气泡、弹窗这类要浮在容器外的元素，
+  截一张确认没被祖先 `overflow: hidden` 裁掉——`z-index` 调大没用，截图才看得出。
+- **不能只靠执行了 JS 的截图验收**：内容是否默认可见、禁用 JS 后首屏是否还成立，
+  要单独确认；这类缺陷在正常截图里完全看不出来。同理，深色主题要确认首帧不闪白。
 - 项目或任务目录里有验证脚本时，交付前连续跑 3 次，3 次都通过才算通过。
 - 只跑项目的类型检查和 lint，不跑生产构建和全量测试。
   构建失败、接口报错这类和画面无关的环境问题，交付说明里记一行后绕过，
@@ -252,7 +260,7 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 - [工作区布局](references/workspace-layout.md) — 后台骨架、状态区、表格、密度、移动端降级
 - [存量改造](references/legacy-refactor.md) — 老项目改 UI 的分批流程、层叠陷阱、验证方式
 - [明暗双主题](references/theme-switching.md) — 令牌两套值、切换按钮、head 内防闪烁、主题对比度
-- [界面排错](references/debugging-ui.md) — 探针脚本与五个实测过的坑（flex 塌缩、pin 钉错、脚本未执行、截图伪影、端口）
+- [界面排错](references/debugging-ui.md) — 探针脚本与八个实测过的坑（flex 塌缩、pin 钉错、脚本未执行、截图伪影、端口、浮层被裁、依赖 JS 才显现、FOUC）
 
 **证据篇**
 
