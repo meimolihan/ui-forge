@@ -104,6 +104,8 @@ python <本目录>/scripts/search.py "<你怀疑的问题>" --domain ux
 | 表单分组、校验时机、错误位置、提交反馈 | [表单](references/forms.md) | `ux` |
 | 后台布局、状态区、表格、密度、移动端降级 | [工作区布局](references/workspace-layout.md) | `product`、`chart` |
 | 存量项目改造流程、层叠陷阱、验证方式 | [存量改造](references/legacy-refactor.md) | `ux` |
+| 明暗双主题、切换按钮、防闪烁、主题对比度 | [明暗双主题](references/theme-switching.md) | `color` `ux` |
+| 改动看着不对时的实测排错法 | [界面排错](references/debugging-ui.md) | — |
 | 图表与数据可视化 | 项目自身图表库 | `chart` |
 
 **先查规则库再动手**，尤其是触控尺寸、焦点可见性、对比度这三项——
@@ -171,6 +173,13 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 
 它会按 Tab 遍历所有可操作控件，报告哪个缺可见焦点环。
 **这类结论必须有实测支撑，不能只看 CSS 就下判断。**
+
+### 改动看着不对时，先量再改
+
+凭 CSS 语义猜出来的原因，看着像那么回事，修完往往不对。排错先挂探针，
+读 `getComputedStyle` 和 `getBoundingClientRect`，把「哪里不对」变成一个数，
+改完复测同一个数。**同一处两次跑出两个对比度，先怀疑取样时机，别改色值。**
+五个已实测过的坑和探针写法读 [界面排错](references/debugging-ui.md)。
 
 ---
 
@@ -242,6 +251,8 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 - [表单](references/forms.md) — 分组、每字段四件事、错误三硬要求、校验时机
 - [工作区布局](references/workspace-layout.md) — 后台骨架、状态区、表格、密度、移动端降级
 - [存量改造](references/legacy-refactor.md) — 老项目改 UI 的分批流程、层叠陷阱、验证方式
+- [明暗双主题](references/theme-switching.md) — 令牌两套值、切换按钮、head 内防闪烁、主题对比度
+- [界面排错](references/debugging-ui.md) — 探针脚本与五个实测过的坑（flex 塌缩、pin 钉错、脚本未执行、截图伪影、端口）
 
 **证据篇**
 
