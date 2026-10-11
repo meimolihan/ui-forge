@@ -30,6 +30,11 @@ description: "Design, build, optimize, and review interfaces with a design-judgm
 需要 Python 3（跑检索脚本）。规则库检索是可选的：
 纯视觉方向探索不依赖它，但涉及可访问性、密度、表单、图表时应当查。
 
+截图工具另需 Node 和 Chrome / Chromium / Edge 之一（本机没有时退回宿主浏览器工具，
+交出同样的几样证据即可）。注意 `--evidence` 是**串行**跑完整套取证，
+一个静态页面实测约 **2 分半**，每组录屏再加 5–10 秒——按这个量级排期，
+一轮取证只跑一次，不要因为慢就重复跑。细节见 [工具](references/tools.md)。
+
 **存量项目改 UI 前，先查规则库**——这比凭经验改更可靠：
 
 ```bash
@@ -246,7 +251,7 @@ node <本目录>/scripts/verify_focus.mjs <页面地址或 HTML 文件>
 
 **规则库篇**（`references/uxdata/`）
 
-- [快速参考](references/uxdata/quick-reference.md) — 119 条 UX 规则全文，按类分节
+- [快速参考](references/uxdata/quick-reference.md) — 221 条规则的静态索引，按 10 个类分节（比 `--domain ux` 的 119 条覆盖面更广，含 WCAG 2.2 条款）
 - [Pro 规则](references/uxdata/pro-rules.md) — 图标纪律、交互反馈、明暗对比、交付清单
 
 **规则库检索**
@@ -257,8 +262,12 @@ python <本目录>/scripts/search.py "<query>" --stack <stack>
 python <本目录>/scripts/search.py "<query>" --design-system [-p "项目名"] [--variance 1-10] [--motion 1-10] [--density 1-10]
 ```
 
-domain（共 13 个，实测可用）：
+domain（共 12 个，实测可用）：
 `ux` `style` `color` `typography` `google-fonts` `chart` `icons` `gsap` `product` `landing` `web` `react`
+
+`ux` 读 `data/ux-guidelines.csv`（119 行），`web` 读 `data/app-interface.csv`（32 行），
+两个域内容不同，跨端规则要分别查。`references/uxdata/quick-reference.md` 是 221 条规则的
+静态索引，覆盖面比任一 domain 更广，适合整页评审时逐条过。
 
 stack（共 22 个，实测可用）：
 `react` `nextjs` `vue` `svelte` `astro` `nuxtjs` `nuxt-ui` `angular` `laravel` `swiftui`

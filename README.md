@@ -124,7 +124,7 @@ ui-forge/
 │   ├── legacy-refactor.md    存量项目改造流程
 │   ├── tools.md              截图工具完整用法
 │   ├── reviewer-manual.md    评审手册
-│   └── uxdata/               119 条 UX 规则全文
+│   └── uxdata/               221 条规则静态索引（10 类）+ Pro 规则
 └── assets/                字体、对比页模板
 ```
 
@@ -159,8 +159,12 @@ ui-forge/
 
 ## 可用的检索域
 
-实测共 **13 个 domain**：`ux` `style` `color` `typography` `google-fonts` `chart`
+实测共 **12 个 domain**：`ux` `style` `color` `typography` `google-fonts` `chart`
 `icons` `gsap` `product` `landing` `web` `react`
+
+`ux` 指向 `data/ux-guidelines.csv`（119 行），`web` 指向 `data/app-interface.csv`（32 行）；
+两者不同，跨端规则要分别查。`references/uxdata/quick-reference.md` 是 221 条规则的
+静态索引，覆盖面比单个 domain 更广。
 
 **没有 `motion` 这个 domain**，动效相关的可检索项在 `gsap` 里。
 

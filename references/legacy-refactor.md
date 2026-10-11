@@ -76,7 +76,7 @@ python scripts/search.py "touch target spacing" --domain ux
 
 一次查询拿到的是「有数字标准的要求」，比「看着有点小」可靠得多。
 
-**清单式排查**（把 119 条规则按项目类型过一遍，比凭印象想更全）：
+**清单式排查**（把 `references/uxdata/quick-reference.md` 的 221 条规则按项目类型过一遍，比凭印象想更全）：
 
 ```
 可访问性 → 焦点可见、颜色对比、颜色非唯一语义、标签关联
